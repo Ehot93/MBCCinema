@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Box, HStack, VStack, Button, Text, Stack } from "@chakra-ui/react";
+import { Box, HStack, VStack, Button, Text } from "@chakra-ui/react";
 import { MdImage } from "react-icons/md";
 
 export function FilmsPage() {
@@ -21,53 +21,65 @@ export function FilmsPage() {
 
     return (
         <Box flex="1" overflowY="auto">
-            {/* Заголовки колонок - скрыты на мобильных */}
-            <HStack justifyContent="space-between">
-                <Box w="100%" textAlign="center">
+            {/* Заголовки колонок - видны только на десктопе */}
+            <HStack
+                gap={{ base: "2", md: "20" }}
+                mb={{ base: "6", md: "8" }}
+                pb={{ base: "3", md: "4" }}
+                borderBottom="1px"
+                borderColor="gray.700"
+                display={{ base: "none", md: "flex" }}
+                px={{ base: "4", md: "6" }}
+            >
+                <Box w="80px" flexShrink="0" />
+                <Box w="40%">
                     <Text fontWeight="bold" fontSize="lg">
                         Название
                     </Text>
                 </Box>
-                <Box w="100%" textAlign="center">
+                <Box flex="1">
                     <Text fontWeight="bold" fontSize="lg">
                         Продолжительность
                     </Text>
                 </Box>
-                <Box w="100%" textAlign="center">
+                <Box flex="1">
                     <Text fontWeight="bold" fontSize="lg">
                         Рейтинг
                     </Text>
                 </Box>
+                <Box w="200px" />
             </HStack>
+
             {/* Таблица фильмов */}
-            <VStack align="stretch" gap={{ base: "3", md: "4" }}>
+            <VStack align="stretch" gap={{ base: "3", md: "4" }} px={{ base: "4", md: "6" }}>
                 {films.map((film) => (
-                    <Stack
+                    <HStack
                         key={film.id}
-                        direction={{ base: "column", md: "row" }}
                         gap={{ base: "3", md: "6" }}
                         p={{ base: "3", md: "4" }}
                         borderWidth="1px"
                         borderColor="gray.700"
                         borderRadius={{ base: "md", md: "none" }}
-                        align={{ base: "stretch", md: "center" }}
+                        align={{ base: "flex-start", md: "center" }}
+                        display={{ base: "flex", md: "flex" }}
+                        flexDir={{ base: "column", md: "row" }}
                     >
-                        {/* Иконка фильма */}
-                        <Box
-                            w={{ base: "100%", md: "60px" }}
-                            h={{ base: "150px", md: "60px" }}
-                            bg="gray.800"
-                            borderRadius="md"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            flexShrink="0"
-                        >
-                            <MdImage size={40} />
-                        </Box>
+                        {/* Мобильная версия: все вертикально */}
+                        <VStack align={{ base: "stretch", md: "flex-start" }} w={{ base: "100%", md: "auto" }} gap="2" display={{ base: "flex", md: "none" }}>
+                            {/* Иконка фильма */}
+                            <Box
+                                w="100%"
+                                h="150px"
+                                bg="gray.800"
+                                borderRadius="md"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                flexShrink="0"
+                            >
+                                <MdImage size={40} />
+                            </Box>
 
-                        {/* Информация */}
-                        <VStack align={{ base: "stretch", md: "flex-start" }} flex="1" gap="2">
                             {/* Название */}
                             <Box>
                                 <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">
@@ -78,8 +90,8 @@ export function FilmsPage() {
                                 </Text>
                             </Box>
 
-                            {/* Продолжительность и Рейтинг в строку */}
-                            <HStack gap={{ base: "8", md: "16" }} w="100%">
+                            {/* Продолжительность и Рейтинг */}
+                            <HStack gap="8" w="100%">
                                 <Box>
                                     <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">
                                         Продолжительность
@@ -95,6 +107,41 @@ export function FilmsPage() {
                                 </Box>
                             </HStack>
                         </VStack>
+
+                        {/* Иконка фильма - только на десктопе */}
+                        <Box
+                            w="80px"
+                            h="60px"
+                            bg="gray.800"
+                            borderRadius="md"
+                            display={{ base: "none", md: "flex" }}
+                            alignItems="center"
+                            justifyContent="center"
+                            flexShrink="0"
+                        >
+                            <MdImage size={40} />
+                        </Box>
+
+                        {/* Название - только на десктопе */}
+                        <Box w={{ base: "100%", md: "40%" }} display={{ base: "none", md: "block" }}>
+                            <Text fontSize={{ base: "md", md: "lg" }} fontWeight="500">
+                                {film.title}
+                            </Text>
+                        </Box>
+
+                        {/* Продолжительность - только на десктопе */}
+                        <Box flex="1" display={{ base: "none", md: "block" }}>
+                            <Text fontSize={{ base: "md", md: "lg" }}>
+                                {film.duration}
+                            </Text>
+                        </Box>
+
+                        {/* Рейтинг - только на десктопе */}
+                        <Box flex="1" display={{ base: "none", md: "block" }}>
+                            <Text fontSize={{ base: "md", md: "lg" }}>
+                                {film.rating}
+                            </Text>
+                        </Box>
 
                         {/* Кнопка */}
                         <Button
@@ -112,7 +159,7 @@ export function FilmsPage() {
                         >
                             Посмотреть сеансы
                         </Button>
-                    </Stack>
+                    </HStack>
                 ))}
             </VStack>
         </Box>

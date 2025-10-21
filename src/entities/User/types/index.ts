@@ -5,10 +5,11 @@ export interface User {
 }
 
 export interface AuthCredentials {
-    email: string;
+    username: string;
     password: string;
 }
 
 export interface RegisterCredentials extends AuthCredentials {
+    email: string;
     confirmPassword: string;
 }

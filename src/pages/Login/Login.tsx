@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useAuthStore } from "../../entities/User";
 import {
     Box,
     Flex,
@@ -15,10 +16,10 @@ import {
 
 // Схема валидации
 const loginSchema = yup.object().shape({
-    email: yup
+    username: yup
         .string()
-        .email("Введите корректный email")
-        .required("Email обязателен"),
+        .min(8, "Логин должен быть минимум 8 символов")
+        .required("Логин обязателен"),
     password: yup
         .string()
         .min(8, "Пароль должен быть минимум 8 символов")
@@ -29,6 +30,7 @@ type LoginFormInputs = yup.InferType<typeof loginSchema>;
 
 export function LoginPage() {
     const navigate = useNavigate();
+    const { login, isLoading, error: storeError, clearError } = useAuthStore();
     const {
         register,
         handleSubmit,
@@ -37,10 +39,19 @@ export function LoginPage() {
         resolver: yupResolver(loginSchema),
     });
 
-    const onSubmit = (data: LoginFormInputs) => {
-        // В реальном приложении здесь будет API запрос
-        console.log("Login data:", data);
-        navigate("/");
+    const onSubmit = async (data: LoginFormInputs) => {
+        try {
+            clearError();
+            await login({
+                username: data.username,
+                password: data.password,
+            });
+            // После успешного логина переходим на страницу билетов
+            navigate("/tickets");
+        } catch (err) {
+            // Ошибка уже в store
+            console.error("Ошибка логина:", err);
+        }
     };
 
     return (
@@ -66,32 +77,34 @@ export function LoginPage() {
                     {/* Форма входа */}
                     <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
                         <VStack gap={{ base: "5", md: "6" }} w="100%">
-                            {/* Email */}
+                            {/* Логин */}
                             <Fieldset.Root w="100%">
                                 <Fieldset.Legend fontSize={{ base: "sm", md: "md" }} mb={{ base: "2", md: "3" }}>
                                     Логин
                                 </Fieldset.Legend>
                                 <Input
-                                    type="email"
+                                    type="text"
                                     placeholder="Введите логин"
-                                    {...register("email")}
+                                    {...register("username")}
                                     bg="gray.900"
-                                    borderColor="gray.700"
+                                    borderColor={errors.username ? "red.600" : "gray.700"}
                                     borderWidth="1px"
                                     _focusVisible={{
-                                        borderColor: "blue.500",
-                                        boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.5)",
+                                        borderColor: errors.username ? "red.500" : "blue.500",
+                                        boxShadow: errors.username
+                                            ? "0 0 0 1px rgba(239, 68, 68, 0.5)"
+                                            : "0 0 0 1px rgba(59, 130, 246, 0.5)",
                                     }}
                                     _hover={{
-                                        borderColor: "gray.600",
+                                        borderColor: errors.username ? "red.700" : "gray.600",
                                     }}
                                     py={{ base: "2", md: "2.5" }}
                                     px={{ base: "3", md: "4" }}
                                     fontSize={{ base: "sm", md: "md" }}
                                 />
-                                {errors.email && (
+                                {errors.username && (
                                     <Text fontSize={{ base: "xs", md: "sm" }} color="red.400" mt="2">
-                                        {errors.email.message}
+                                        {errors.username.message}
                                     </Text>
                                 )}
                             </Fieldset.Root>
@@ -106,14 +119,16 @@ export function LoginPage() {
                                     placeholder="Введите пароль"
                                     {...register("password")}
                                     bg="gray.900"
-                                    borderColor="gray.700"
+                                    borderColor={errors.password ? "red.600" : "gray.700"}
                                     borderWidth="1px"
                                     _focusVisible={{
-                                        borderColor: "blue.500",
-                                        boxShadow: "0 0 0 1px rgba(59, 130, 246, 0.5)",
+                                        borderColor: errors.password ? "red.500" : "blue.500",
+                                        boxShadow: errors.password
+                                            ? "0 0 0 1px rgba(239, 68, 68, 0.5)"
+                                            : "0 0 0 1px rgba(59, 130, 246, 0.5)",
                                     }}
                                     _hover={{
-                                        borderColor: "gray.600",
+                                        borderColor: errors.password ? "red.700" : "gray.600",
                                     }}
                                     py={{ base: "2", md: "2.5" }}
                                     px={{ base: "3", md: "4" }}
@@ -125,6 +140,15 @@ export function LoginPage() {
                                     </Text>
                                 )}
                             </Fieldset.Root>
+
+                            {/* Ошибка из API */}
+                            {storeError && (
+                                <Text fontSize={{ base: "sm", md: "md" }} color="red.400" w="100%">
+                                    {storeError === "Ошибка при входе"
+                                        ? "Неверный логин или пароль. Проверьте введенные данные и попробуйте снова"
+                                        : storeError}
+                                </Text>
+                            )}
 
                             {/* Кнопка входа */}
                             <Button
@@ -139,16 +163,17 @@ export function LoginPage() {
                                 px={{ base: "4", md: "6" }}
                                 fontSize={{ base: "sm", md: "md" }}
                                 fontWeight="500"
+                                disabled={isLoading}
                                 _hover={{
-                                    bg: "white",
-                                    color: "black",
+                                    bg: isLoading ? "transparent" : "white",
+                                    color: isLoading ? "white" : "black",
                                 }}
                                 _active={{
                                     bg: "gray.200",
                                 }}
                                 mt={{ base: "4", md: "6" }}
                             >
-                                Войти
+                                {isLoading ? "Загрузка..." : "Войти"}
                             </Button>
                         </VStack>
                     </form>
