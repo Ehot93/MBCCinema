@@ -55,24 +55,6 @@ export function SeatsPage() {
 
   return (
     <Box flex="1" p={{ base: "4", md: "8" }} overflowY="auto">
-      {/* Кнопка назад */}
-      <Button
-        // leftIcon={<MdArrowBack />}
-        variant="ghost"
-        color="white"
-        mb={{ base: "4", md: "6" }}
-        _hover={{ bg: "gray.800" }}
-        onClick={() => navigate(-1)}
-      >
-        Назад
-      </Button>
-
-      {/* Заголовок */}
-      <Heading size={{ base: "lg", md: "2xl" }} mb={{ base: "6", md: "8" }}>
-        Выбрать места
-      </Heading>
-
-      {/* Информация о сеансе */}
       <VStack align="flex-start" gap="1" mb={{ base: "6", md: "8" }}>
         <Text color="gray.400" fontSize={{ base: "sm", md: "md" }}>
           Фильм: {showtime.film}

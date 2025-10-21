@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useAuthStore } from "../../entities/User";
 import {
     Flex,
     VStack,
@@ -14,6 +15,10 @@ import {
 
 // Схема валидации
 const registerSchema = yup.object().shape({
+    email: yup
+        .string()
+        .email("Введите корректный email")
+        .required("Email обязателен"),
     username: yup
         .string()
         .min(8, "Логин должен быть минимум 8 символов")
@@ -34,6 +39,7 @@ type RegisterFormInputs = yup.InferType<typeof registerSchema>;
 
 export function RegisterPage() {
     const navigate = useNavigate();
+    const { register: registerUser, isLoading, error: storeError } = useAuthStore();
     const {
         register,
         handleSubmit,
@@ -42,10 +48,19 @@ export function RegisterPage() {
         resolver: yupResolver(registerSchema),
     });
 
-    const onSubmit = (data: RegisterFormInputs) => {
-        // В реальном приложении здесь будет API запрос
-        console.log("Register data:", data);
-        navigate("/");
+    const onSubmit = async (data: RegisterFormInputs) => {
+        try {
+            await registerUser({
+                email: data.email,
+                username: data.username,
+                password: data.password,
+            });
+            // После успешной регистрации переходим на страницу билетов
+            navigate("/tickets");
+        } catch (err) {
+            // Ошибка уже в store
+            console.error("Ошибка регистрации:", err);
+        }
     };
 
     return (
@@ -71,6 +86,38 @@ export function RegisterPage() {
                 {/* Форма регистрации */}
                 <form onSubmit={handleSubmit(onSubmit)} style={{ width: "100%" }}>
                     <VStack gap={{ base: "4", md: "6" }} w="100%">
+                        {/* Email */}
+                        <Fieldset.Root w="100%">
+                            <Fieldset.Legend fontSize={{ base: "sm", md: "md" }} mb={{ base: "2", md: "3" }}>
+                                Email
+                            </Fieldset.Legend>
+                            <Input
+                                type="email"
+                                placeholder="Введите email"
+                                {...register("email")}
+                                bg="gray.900"
+                                borderColor={errors.email ? "red.600" : "gray.700"}
+                                borderWidth="1px"
+                                _focusVisible={{
+                                    borderColor: errors.email ? "red.500" : "blue.500",
+                                    boxShadow: errors.email
+                                        ? "0 0 0 1px rgba(239, 68, 68, 0.5)"
+                                        : "0 0 0 1px rgba(59, 130, 246, 0.5)",
+                                }}
+                                _hover={{
+                                    borderColor: errors.email ? "red.700" : "gray.600",
+                                }}
+                                py={{ base: "2", md: "2.5" }}
+                                px={{ base: "3", md: "4" }}
+                                fontSize={{ base: "sm", md: "md" }}
+                            />
+                            {errors.email && (
+                                <Text fontSize={{ base: "xs", md: "sm" }} color="red.400" mt="2">
+                                    {errors.email.message}
+                                </Text>
+                            )}
+                        </Fieldset.Root>
+
                         {/* Логин */}
                         <Fieldset.Root w="100%">
                             <Fieldset.Legend fontSize={{ base: "sm", md: "md" }} mb={{ base: "2", md: "3" }}>
@@ -167,6 +214,13 @@ export function RegisterPage() {
                             )}
                         </Fieldset.Root>
 
+                        {/* Ошибка из store */}
+                        {storeError && (
+                            <Text fontSize={{ base: "sm", md: "md" }} color="red.400" w="100%">
+                                {storeError}
+                            </Text>
+                        )}
+
                         {/* Кнопка регистрации */}
                         <Button
                             type="submit"
@@ -179,15 +233,16 @@ export function RegisterPage() {
                             px={{ base: "6", md: "8" }}
                             fontSize={{ base: "md", md: "md" }}
                             fontWeight="500"
+                            disabled={isLoading}
                             _hover={{
-                                bg: "white",
-                                color: "black",
+                                bg: isLoading ? "transparent" : "white",
+                                color: isLoading ? "white" : "black",
                             }}
                             _active={{
                                 bg: "gray.200",
                             }}
                         >
-                            Зарегистрироваться
+                            {isLoading ? "Загрузка..." : "Зарегистрироваться"}
                         </Button>
                     </VStack>
                 </form>
