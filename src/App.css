@@ -1,0 +1,20 @@
+/* Анимация для React логотипа */
+.react-logo {
+  animation: logo-spin infinite 20s linear;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Отключение анимации для пользователей с настройкой prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .react-logo {
+    animation: none;
+  }
+}
