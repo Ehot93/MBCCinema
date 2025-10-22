@@ -1,96 +1,113 @@
 import { create } from "zustand";
-import { Film, FilmDetails } from "../types";
+import { CinemaShowtime, Film, FilmDetails, MovieSession } from "../types";
 import apiClient from "../../../shared/lib/api";
+import { Cinema } from "../../Cinema/types";
 
 interface FilmState {
-    films: Film[];
-    filmDetails: FilmDetails | null;
-    isLoading: boolean;
-    error: string | null;
+  films: Film[];
+  filmDetails: FilmDetails | null;
+  isLoading: boolean;
+  error: string | null;
 
-    // Actions
-    fetchFilms: () => Promise<void>;
-    fetchFilmDetails: (id: number) => Promise<void>;
-    setFilms: (films: Film[]) => void;
-    setFilmDetails: (film: FilmDetails | null) => void;
-    clearError: () => void;
+  // Actions
+  fetchFilms: () => Promise<void>;
+  fetchFilmDetails: (id: number) => Promise<void>;
+  setFilms: (films: Film[]) => void;
+  setFilmDetails: (film: FilmDetails | null) => void;
+  clearError: () => void;
+}
+
+// Helper функция для группировки сеансов по датам и кинотеатрам
+function groupSessionsByDate(sessions: MovieSession[], cinemas: Cinema[]) {
+  const grouped: { [key: string]: { [cinemaId: number]: CinemaShowtime[] } } = {};
+
+  sessions.forEach((session) => {
+    const date = new Date(session.startTime);
+    const dateKey = date.toLocaleDateString("ru-RU");
+
+    if (!grouped[dateKey]) {
+      grouped[dateKey] = {};
+    }
+
+    if (!grouped[dateKey][session.cinemaId]) {
+      grouped[dateKey][session.cinemaId] = [];
+    }
+
+    const time = date.toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    (grouped[dateKey][session.cinemaId] as any).push(time);
+  });
+
+  // Преобразуем в нужный формат
+  return Object.entries(grouped).map(([date, cinemaSessions]) => ({
+    date,
+    showtimes: Object.entries(cinemaSessions).map(([cinemaId, times]) => {
+      const cinema = cinemas.find((c) => c.id === parseInt(cinemaId));
+      return {
+        cinemaId: parseInt(cinemaId),
+        cinemaName: cinema?.name || "Неизвестный кинотеатр",
+        startTime: times,
+      };
+    }),
+  }));
 }
 
 export const useFilmStore = create<FilmState>((set) => ({
-    films: [],
-    filmDetails: null,
-    isLoading: false,
-    error: null,
+  films: [],
+  filmDetails: null,
+  isLoading: false,
+  error: null,
 
-    fetchFilms: async () => {
-        set({ isLoading: true, error: null });
-        try {
-            // Для разработки используем mock данные
-            const mockFilms: Film[] = [
-                {
-                    id: 1,
-                    title: "Мстители",
-                    duration: "2:20",
-                    rating: 4.21,
-                    year: 2022,
-                    description: "Супергеройский боевик",
-                },
-                {
-                    id: 2,
-                    title: "Темный рыцарь",
-                    duration: "1:45",
-                    rating: 4.79,
-                    year: 2020,
-                    description: "Криминальный триллер",
-                },
-            ];
+  fetchFilms: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await apiClient.get("/movies");
+      set({ films: response.data, isLoading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Ошибка при загрузке фильмов";
+      set({ error: message, isLoading: false });
+    }
+  },
 
-            // Когда будет реальный API, раскомментируйте:
-            // const response = await apiClient.get("/films");
-            // set({ films: response.data, isLoading: false });
+  fetchFilmDetails: async (id: number) => {
+    set({ isLoading: true, error: null });
+    try {
+      // Получаем информацию о фильме
+      const filmResponse = await apiClient.get(`/movies/${id}/sessions`);
+      const sessions = filmResponse.data;
 
-            set({ films: mockFilms, isLoading: false });
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Ошибка при загрузке фильмов";
-            set({ error: message, isLoading: false });
-        }
-    },
+      // Получаем список кинотеатров
+      const cinemasResponse = await apiClient.get("/cinemas");
+      const cinemas = cinemasResponse.data;
 
-    fetchFilmDetails: async (id: number) => {
-        set({ isLoading: true, error: null });
-        try {
-            // Mock данные
-            const mockFilm: FilmDetails = {
-                id,
-                title: "Темный рыцарь",
-                duration: "2:32",
-                rating: 9.0,
-                year: 2008,
-                description: "Когда Джокер сеет хаос в Готэме...",
-                showtimes: [
-                    {
-                        date: "24.07",
-                        cinemas: [
-                            { name: "Skyline Cinema", times: ["15:30", "18:30", "20:30"] },
-                        ],
-                    },
-                ],
-            };
+      // Находим сам фильм в списке всех фильмов
+      const allFilmsResponse = await apiClient.get("/movies");
+      const film = allFilmsResponse.data.find((f: Film) => f.id === id);
 
-            // Когда будет реальный API:
-            // const response = await apiClient.get(`/films/${id}`);
-            // set({ filmDetails: response.data, isLoading: false });
+      if (!film) {
+        throw new Error("Фильм не найден");
+      }
 
-            set({ filmDetails: mockFilm, isLoading: false });
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Ошибка при загрузке фильма";
-            set({ error: message, isLoading: false });
-        }
-    },
+      const showtimes = groupSessionsByDate(sessions, cinemas);
 
-    setFilms: (films) => set({ films }),
+      const filmDetails: FilmDetails = {
+        ...film,
+        showtimes,
+      };
 
-    setFilmDetails: (film) => set({ filmDetails: film }),
+      set({ filmDetails, isLoading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Ошибка при загрузке фильма";
+      set({ error: message, isLoading: false });
+    }
+  },
 
-    clearError: () => set({ error: null }),
+  setFilms: (films) => set({ films }),
+
+  setFilmDetails: (film) => set({ filmDetails: film }),
+
+  clearError: () => set({ error: null }),
 }));

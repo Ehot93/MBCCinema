@@ -7,7 +7,12 @@ interface Ticket {
   cinemaName: string;
   date: string;
   time: string;
-  seats: string[];
+  seats: Array<{ rowNumber: number; seatNumber: number }>;
+}
+
+// Функция для преобразования места из объекта в читаемый формат "Ряд 1, место 1"
+function formatSeat(seat: { rowNumber: number; seatNumber: number }): string {
+  return `Ряд ${seat.rowNumber}, место ${seat.seatNumber}`;
 }
 
 export function TicketsPage() {
@@ -18,7 +23,10 @@ export function TicketsPage() {
       cinemaName: "Skyline Cinema",
       date: "24.07",
       time: "18:30",
-      seats: ["1A", "1B"],
+      seats: [
+        { rowNumber: 1, seatNumber: 1 },
+        { rowNumber: 1, seatNumber: 2 },
+      ],
     },
     {
       id: 2,
@@ -26,7 +34,7 @@ export function TicketsPage() {
       cinemaName: "Салют",
       date: "25.07",
       time: "20:00",
-      seats: ["5C"],
+      seats: [{ rowNumber: 5, seatNumber: 3 }],
     },
   ];
 
@@ -74,7 +82,7 @@ export function TicketsPage() {
             <VStack align={{ base: "stretch", md: "flex-start" }} gap="1" flex="1">
               {ticket.seats.map((seat, seatIdx) => (
                 <Text key={seatIdx} fontSize={{ base: "sm", md: "md" }}>
-                  {seat}
+                  {formatSeat(seat)}
                 </Text>
               ))}
             </VStack>
