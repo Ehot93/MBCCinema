@@ -6,6 +6,7 @@ import { FilmsPage } from "../../pages/Films";
 import { FilmDetailsPage } from "../../pages/FilmDetails";
 import { CinemasPage } from "../../pages/Cinemas";
 import { CinemaDetailsPage } from "../../pages/CinemaDetails";
+import { CinemaSchedulePage } from "../../pages/CinemaSchedule";
 import { SeatsPage } from "../../pages/Seats";
 import { TicketsPage } from "../../pages/Tickets";
 
@@ -20,7 +21,8 @@ export function Router() {
                     <Route path="/film/:id" element={<FilmDetailsPage />} />
                     <Route path="/cinemas" element={<CinemasPage />} />
                     <Route path="/cinema/:id" element={<CinemaDetailsPage />} />
-                    <Route path="/seats" element={<SeatsPage />} />
+                    <Route path="/cinema/:id/schedule" element={<CinemaSchedulePage />} />
+                    <Route path="/seats/:sessionId" element={<SeatsPage />} />
                     <Route path="/tickets" element={<TicketsPage />} />
                 </Route>
             </Routes>

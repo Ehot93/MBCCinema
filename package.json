@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx}\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-types": "cd backend && node -e \"import('./src/swagger.js').then(({ swaggerSpec }) => { console.log(JSON.stringify(swaggerSpec, null, 2)); }).catch(console.error);\" > ../swagger-schema.json && cd .. && npx openapi-typescript swagger-schema.json -o src/shared/types/api.ts && rm swagger-schema.json"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.28.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@openapitools/openapi-generator-cli": "^2.25.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
@@ -37,6 +39,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "openapi-typescript": "^7.10.1",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.7",

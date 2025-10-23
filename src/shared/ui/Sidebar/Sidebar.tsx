@@ -75,7 +75,7 @@ export function Sidebar() {
               h={{ base: "50px", md: "60px" }}
               fontSize={{ base: "md", md: "lg" }}
               fontWeight="normal"
-              onClick={() => handleNavigate(item.path, item.isLogout)}
+              onClick={() => handleNavigate(item.path)}
               _hover={{ bg: "gray.700" }}
               justifyContent="space-around"
               pl={{ base: "4", md: "inherit" }}

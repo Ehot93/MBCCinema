@@ -1,8 +1,8 @@
-export interface User {
-    id: number;
-    email: string;
-    username: string;
-}
+// Re-export types from generated API types
+import type { User } from "../../../shared/types";
+
+// Export the types directly
+export type { User };
 
 export interface AuthCredentials {
     username: string;

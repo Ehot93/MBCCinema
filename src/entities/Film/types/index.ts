@@ -1,24 +1,18 @@
-export interface Film {
-  id: number;
-  title: string;
-  year: number;
-  rating: number;
-  posterImage: string;
-  lengthMinutes: number;
-  description: string;
+// Re-export types from generated API types
+import type { Film, FilmSession, FilmSessionWithSeats } from "../../../shared/types";
+
+// Export the types directly
+export type { Film, FilmSession, FilmSessionWithSeats };
+
+export interface ShowtimeSlot {
+  sessionId: number;
+  time: string;
 }
 
-export interface MovieSession {
-  id: number;
-  movieId: number;
-  cinemaId: number;
-  startTime: string;
-  cinemaName: string;
-}
 export interface CinemaShowtime {
   cinemaId: number;
   cinemaName: string;
-  startTime: string;
+  times: ShowtimeSlot[];
 }
 
 export interface ShowtimeDate {

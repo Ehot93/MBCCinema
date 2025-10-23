@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { CinemaShowtime, Film, FilmDetails, MovieSession } from "../types";
+import { Film, FilmDetails, FilmSession } from "../types";
 import apiClient from "../../../shared/lib/api";
 import { Cinema } from "../../Cinema/types";
 
@@ -18,10 +18,12 @@ interface FilmState {
 }
 
 // Helper функция для группировки сеансов по датам и кинотеатрам
-function groupSessionsByDate(sessions: MovieSession[], cinemas: Cinema[]) {
-  const grouped: { [key: string]: { [cinemaId: number]: CinemaShowtime[] } } = {};
+function groupSessionsByDate(sessions: FilmSession[], cinemas: Cinema[]) {
+  const grouped: { [key: string]: { [cinemaId: number]: Array<{ sessionId: number; time: string }> } } = {};
 
   sessions.forEach((session) => {
+    if (!session.startTime || !session.cinemaId || !session.id) return;
+
     const date = new Date(session.startTime);
     const dateKey = date.toLocaleDateString("ru-RU");
 
@@ -38,7 +40,10 @@ function groupSessionsByDate(sessions: MovieSession[], cinemas: Cinema[]) {
       minute: "2-digit",
     });
 
-    (grouped[dateKey][session.cinemaId] as any).push(time);
+    grouped[dateKey][session.cinemaId].push({
+      sessionId: session.id,
+      time,
+    });
   });
 
   // Преобразуем в нужный формат
@@ -49,7 +54,7 @@ function groupSessionsByDate(sessions: MovieSession[], cinemas: Cinema[]) {
       return {
         cinemaId: parseInt(cinemaId),
         cinemaName: cinema?.name || "Неизвестный кинотеатр",
-        startTime: times,
+        times,
       };
     }),
   }));

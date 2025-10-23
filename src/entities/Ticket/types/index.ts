@@ -1,3 +1,9 @@
+// Re-export types from generated API types
+import type { Booking, Seat } from "../../../shared/types";
+
+// Export the types directly
+export type { Booking, Seat };
+
 export interface Ticket {
     id: number;
     filmId: number;
@@ -14,5 +20,5 @@ export interface BookingData {
     cinemaId: number;
     date: string;
     time: string;
-    seats: Set<string>;
+    seats: string[];
 }

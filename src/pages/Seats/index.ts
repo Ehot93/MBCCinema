@@ -1,1 +1,0 @@
-export { SeatsPage } from "./Seats";
