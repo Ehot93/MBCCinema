@@ -4,6 +4,7 @@ import { Box, VStack, HStack, Button, Text, Heading, Spinner, Center } from "@ch
 import { MdArrowBack, MdCheck } from "react-icons/md";
 import { useAuthStore } from "../entities/User";
 import { useFilmSessionStore } from "../entities/Film/model";
+import dayjs from "dayjs";
 
 export function SeatsPage() {
   const navigate = useNavigate();
@@ -130,7 +131,7 @@ export function SeatsPage() {
       {/* Информация о сеансе */}
       <VStack align="flex-start" gap="1" mb={{ base: "6", md: "8" }}>
         <Text color="gray.400" fontSize={{ base: "sm", md: "md" }}>
-          Время: {session.startTime}
+          Время: {dayjs(session.startTime).format("HH:mm")}
         </Text>
       </VStack>
 

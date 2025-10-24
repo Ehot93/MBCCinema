@@ -1,5 +1,7 @@
 // Helper functions for cinema schedule management
 
+import dayjs from "dayjs";
+
 export interface CinemaSession {
     id: number;
     filmId: number;
@@ -27,10 +29,7 @@ export function transformSessionsToSchedule(sessions: CinemaSession[]): CinemaSc
     const scheduleMap = new Map<string, Map<number, CinemaScheduleFilm>>();
 
     sessions.forEach((session) => {
-        const date = new Date(session.startTime).toLocaleDateString("ru-RU", {
-            day: "2-digit",
-            month: "2-digit",
-        });
+        const date = dayjs(session.startTime).format("DD.MM.YYYY");
 
         if (!scheduleMap.has(date)) {
             scheduleMap.set(date, new Map());
@@ -77,11 +76,8 @@ export function getSessionIdForTime(
  * Форматирует время сеанса для отображения
  */
 export function formatSessionTime(startTime: string): string {
-    const date = new Date(startTime);
-    return date.toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+    const date = dayjs(startTime).format("HH:mm");
+    return date;
 }
 
 /**

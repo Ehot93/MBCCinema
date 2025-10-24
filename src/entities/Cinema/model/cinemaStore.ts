@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { Cinema, CinemaDetails } from "../types";
 import apiClient from "../../../shared/lib/api";
 import { transformSessionsToSchedule } from "../lib/scheduleHelpers";
+import { Movie, MovieSession } from "../../../shared/types/api";
+import dayjs from "dayjs";
 
 interface CinemaState {
     cinemas: Cinema[];
@@ -55,16 +57,17 @@ export const useCinemaStore = create<CinemaState>((set) => ({
             }
 
             // Создаем Map для быстрого поиска фильмов по ID
-            const moviesMap = new Map(movies.map((movie: any) => [movie.id, movie]));
+            const moviesMap = new Map(movies.map((movie: Movie) => [movie.id, movie]));
 
             // Преобразуем сеансы в формат расписания
-            const transformedSessions = sessions.map((session: any) => {
-                const movie = moviesMap.get(session.movieId);
+            const transformedSessions = sessions.map((session: MovieSession) => {
+                const movie = moviesMap.get(session.movieId) as Movie;
+                console.log(movie);
                 return {
                     id: session.id,
                     filmId: session.movieId,
                     cinemaId: session.cinemaId,
-                    startTime: new Date(session.startTime).toISOString(),
+                    startTime: session.startTime || "",
                     cinemaName: cinema.name,
                     filmTitle: movie?.title
                 };
@@ -78,16 +81,12 @@ export const useCinemaStore = create<CinemaState>((set) => ({
                 schedule: schedule.map(day => ({
                     date: day.date,
                     films: day.films.map(film => {
-                        const movie = moviesMap.get(film.id);
+                        const movie = moviesMap.get(film.id) as Movie;
                         return {
                             id: film.id,
                             title: movie?.title || `Фильм ${film.id}`,
                             times: film.sessions.map(session => {
-                                const date = new Date(session.startTime);
-                                return date.toLocaleTimeString("ru-RU", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                });
+                                return dayjs(session.startTime).format("HH:mm");
                             }),
                             sessionIds: film.sessions.map(session => session.id),
                             // Добавляем информацию о фильме для отображения постера
