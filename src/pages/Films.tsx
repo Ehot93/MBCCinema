@@ -1,14 +1,9 @@
-import { useEffect } from "react";
 import { Box, SimpleGrid, VStack, Button, Text, Heading, Spinner } from "@chakra-ui/react";
-import { useFilmStore } from "../entities/Film";
+import { useMovies } from "../shared/hooks/useMovieQueries";
 import { FilmCard } from "../features/Films/components/FilmCard";
 
 export function FilmsPage() {
-    const { films, isLoading, error, fetchFilms } = useFilmStore();
-
-    useEffect(() => {
-        fetchFilms();
-    }, [fetchFilms]);
+    const { data: films, isLoading, error, refetch } = useMovies();
 
     if (isLoading) {
         return (
@@ -35,9 +30,9 @@ export function FilmsPage() {
             >
                 <VStack gap="4">
                     <Text color="red.400" fontSize="lg">
-                        {error}
+                        {error?.message || "Произошла ошибка"}
                     </Text>
-                    <Button onClick={() => fetchFilms()}>Попробовать снова</Button>
+                    <Button onClick={() => refetch()}>Попробовать снова</Button>
                 </VStack>
             </Box>
         );
@@ -50,7 +45,7 @@ export function FilmsPage() {
             </Heading>
 
             <SimpleGrid minChildWidth='sm' gap={{ base: "4", md: "6" }}>
-                {films.map((film) => (
+                {films?.map((film) => (
                     <FilmCard key={film.id} film={film} />
                 ))}
             </SimpleGrid>

@@ -1,25 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box, VStack, HStack, Button, Text, Heading, Spinner, Center } from "@chakra-ui/react";
-import { MdArrowBack, MdCheck } from "react-icons/md";
+import { ArrowLeft, Check } from "lucide-react";
 import { useAuthStore } from "../entities/User";
-import { useFilmSessionStore } from "../entities/Film/model";
+import { useMovieSession, useBookSeats } from "../shared/hooks/useMovieQueries";
 import dayjs from "dayjs";
 
 export function SeatsPage() {
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { isAuthenticated } = useAuthStore();
-  const { session, isLoading, error, fetchSession, bookSeats, clearError } = useFilmSessionStore();
-  const [selectedSeats, setSelectedSeats] = useState<Set<string>>(new Set());
-  const [isBooking, setIsBooking] = useState(false);
 
-  // Загрузить данные сеанса при монтировании
-  useEffect(() => {
-    if (sessionId) {
-      fetchSession(parseInt(sessionId));
-    }
-  }, [sessionId, fetchSession]);
+  // Используем TanStack Query вместо Zustand store
+  const sessionIdNum = sessionId ? parseInt(sessionId) : 0;
+  const { data: session, isLoading, error } = useMovieSession(sessionIdNum);
+  const bookSeatsMutation = useBookSeats();
+
+  const [selectedSeats, setSelectedSeats] = useState<Set<string>>(new Set());
 
   if (isLoading) {
     return (
@@ -41,14 +38,18 @@ export function SeatsPage() {
     );
   }
 
-  const bookedSeatsSet = new Set(session.bookedSeats);
-  const rows = session.seats.rows;
-  const cols = session.seats.seatsPerRow;
+  // Преобразуем формат занятых мест из объектов в строки "row-seat"
+  const bookedSeats = ((session as any).bookedSeats || []).map(
+    (seat: any) => `${seat.rowNumber}-${seat.seatNumber}`
+  );
+  const bookedSeatsSet = new Set(bookedSeats);
+  const rows = (session as any).seats?.rows || 0;
+  const cols = (session as any).seats?.seatsPerRow || 0;
 
   // Debug logging
   console.log("Session data:", session);
   console.log("Rows:", rows, "Cols:", cols);
-  console.log("Booked seats:", session.bookedSeats);
+  console.log("Booked seats:", (session as any).bookedSeats);
 
   // Для неавторизованных пользователей отключаем выбор мест
   const canSelectSeats = isAuthenticated;
@@ -77,15 +78,21 @@ export function SeatsPage() {
     if (selectedSeats.size === 0 || !sessionId) return;
 
     try {
-      setIsBooking(true);
-      clearError();
-      await bookSeats(parseInt(sessionId), Array.from(selectedSeats));
+      // Преобразуем формат мест из "row-seat" в {rowNumber, seatNumber}
+      const formattedSeats = Array.from(selectedSeats).map((seatId: string) => {
+        const [row, seat] = seatId.split('-').map(Number);
+        return { rowNumber: row, seatNumber: seat };
+      });
+
+      await bookSeatsMutation.mutateAsync({
+        sessionId: parseInt(sessionId),
+        seats: formattedSeats,
+      });
+
       // После успешного бронирования переходим на страницу билетов
       navigate("/tickets");
     } catch (err) {
       console.error("Ошибка бронирования:", err);
-    } finally {
-      setIsBooking(false);
     }
   };
 
@@ -119,7 +126,7 @@ export function SeatsPage() {
         _hover={{ bg: "gray.800" }}
         onClick={() => navigate(-1)}
       >
-        <MdArrowBack />
+        <ArrowLeft />
         Назад
       </Button>
 
@@ -162,7 +169,7 @@ export function SeatsPage() {
           mb={{ base: "6", md: "8" }}
         >
           <Text fontSize={{ base: "sm", md: "md" }} color="red.100">
-            {error}
+            {error?.message || "Произошла ошибка"}
           </Text>
         </Box>
       )}
@@ -231,7 +238,7 @@ export function SeatsPage() {
                       onClick={() => toggleSeat(row, seat)}
                       color={isSelected ? "white" : "gray.500"}
                     >
-                      {isSelected ? <MdCheck /> : ""}
+                      {isSelected ? <Check /> : ""}
                     </Box>
                   );
                 })}
@@ -299,18 +306,23 @@ export function SeatsPage() {
           fontSize={{ base: "md", md: "lg" }}
           fontWeight="600"
           disabled={
-            isBooking ||
+            bookSeatsMutation.isPending ||
             (isAuthenticated && selectedSeats.size === 0) ||
             !isAuthenticated
           }
           _hover={
-            selectedSeats.size > 0 && isAuthenticated && !isBooking
+            selectedSeats.size > 0 && isAuthenticated && !bookSeatsMutation.isPending
               ? { bg: "white", color: "black" }
               : { opacity: 0.5 }
           }
           onClick={handleBooking}
         >
-          {isAuthenticated ? `Забронировать (${selectedSeats.size})` : "Войти для бронирования"}
+          {isAuthenticated
+            ? bookSeatsMutation.isPending
+              ? "Бронирование..."
+              : `Забронировать (${selectedSeats.size})`
+            : "Войти для бронирования"
+          }
         </Button>
       </HStack>
     </Box>

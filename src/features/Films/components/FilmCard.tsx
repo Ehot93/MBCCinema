@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Box, VStack, Button, Text, Heading, Image, HStack } from "@chakra-ui/react";
-import { MdAccessTime, MdStar } from "react-icons/md";
+import { Clock, Star } from "lucide-react";
 import { Film } from "../../../entities/Film/types";
 import { getImageUrl } from "../../../shared/lib/api";
 
@@ -56,13 +56,13 @@ export function FilmCard({ film }: FilmCardProps) {
 
                 <VStack align="stretch" gap="1" fontSize={{ base: "xs", md: "sm" }}>
                     <HStack gap="1">
-                        <MdAccessTime />
+                        <Clock />
                         <Text color="gray.300">
                             Длительность: {film.lengthMinutes ? `${Math.floor(film.lengthMinutes / 60)}:${(film.lengthMinutes % 60).toString().padStart(2, "0")}` : "Не указано"}
                         </Text>
                     </HStack>
                     <HStack gap="1">
-                        <MdStar color="yellow" />
+                        <Star color="yellow" />
                         <Text color="yellow.400">Рейтинг: {film.rating ? film.rating.toFixed(1) : "Не указан"}</Text>
                     </HStack>
                 </VStack>

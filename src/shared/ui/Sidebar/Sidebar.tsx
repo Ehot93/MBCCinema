@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, VStack, Button, IconButton } from "@chakra-ui/react";
-import { MdMenu, MdClose } from "react-icons/md";
+import { Menu, X } from "lucide-react";
 import { useAuthStore } from "../../../entities/User";
 
 const baseMenuItems = [
@@ -50,7 +50,7 @@ export function Sidebar() {
           _hover={{ bg: "gray.800" }}
           aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
         >
-          {isOpen ? <MdClose size={24} /> : <MdMenu size={24} />}
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
         </IconButton>
       </Box>
 

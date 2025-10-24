@@ -1,15 +1,17 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, HStack, VStack, Button, Text, Spinner, Center } from "@chakra-ui/react";
-import { useCinemaStore } from "../entities/Cinema";
+import { useCinemas, usePrefetchCinemaData } from "../shared/hooks/useCinemaQueries";
 
 export function CinemasPage() {
   const navigate = useNavigate();
-  const { cinemas, isLoading, error, fetchCinemas } = useCinemaStore();
+  const { data: cinemas, isLoading, error, refetch } = useCinemas();
+  const { prefetchCinemaDetails } = usePrefetchCinemaData();
 
-  useEffect(() => {
-    fetchCinemas();
-  }, [fetchCinemas]);
+  const handleCinemaClick = (cinemaId: number) => {
+    // Предзагружаем данные кинотеатра перед навигацией
+    prefetchCinemaDetails(cinemaId);
+    navigate(`/cinema/${cinemaId}/schedule`);
+  };
 
   if (isLoading) {
     return (
@@ -26,7 +28,7 @@ export function CinemasPage() {
         <Text color="red.400" fontSize="lg">
           {error}
         </Text>
-        <Button onClick={() => fetchCinemas()}>Попробовать снова</Button>
+        <Button onClick={() => refetch()}>Попробовать снова</Button>
       </Center>
     );
   }
@@ -58,7 +60,7 @@ export function CinemasPage() {
 
       {/* Таблица кинотеатров */}
       <VStack align="stretch" gap={{ base: "3", md: "4" }} px={{ base: "4", md: "6" }}>
-        {cinemas.map((cinema) => (
+        {cinemas?.map((cinema: any) => (
           <HStack
             key={cinema.id}
             gap={{ base: "3", md: "6" }}
@@ -119,7 +121,7 @@ export function CinemasPage() {
               whiteSpace="nowrap"
               _hover={{ bg: "white", color: "black" }}
               w={{ base: "100%", md: "auto" }}
-              onClick={() => navigate(`/cinema/${cinema.id}/schedule`)}
+              onClick={() => handleCinemaClick(cinema.id!)}
             >
               Посмотреть сеансы
             </Button>

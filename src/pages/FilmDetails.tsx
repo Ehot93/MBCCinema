@@ -13,7 +13,7 @@ import {
   Spinner,
   Table,
 } from "@chakra-ui/react";
-import { MdArrowBack, MdStar } from "react-icons/md";
+import { ArrowLeft, Star } from "lucide-react";
 import { useFilmStore } from "../entities/Film";
 import { getImageUrl } from "../shared/lib/api";
 
@@ -52,7 +52,7 @@ export function FilmDetailsPage() {
           _hover={{ bg: "gray.800" }}
           onClick={() => navigate("/")}
         >
-          <MdArrowBack />
+          <ArrowLeft />
           Назад
         </Button>
         <Text color="red.400" fontSize="lg">
@@ -74,7 +74,7 @@ export function FilmDetailsPage() {
         _hover={{ bg: "gray.800" }}
         onClick={() => navigate("/")}
       >
-        <MdArrowBack />
+        <ArrowLeft />
         Назад
       </Button>
 
@@ -140,7 +140,7 @@ export function FilmDetailsPage() {
                   Рейтинг
                 </Text>
                 <Text fontSize={{ base: "md", md: "lg" }}>
-                  <MdStar color="yellow" /> {film.rating ? film.rating.toFixed(1) : "Не указан"}
+                  <Star color="yellow" /> {film.rating ? film.rating.toFixed(1) : "Не указан"}
                 </Text>
               </VStack>
             </HStack>

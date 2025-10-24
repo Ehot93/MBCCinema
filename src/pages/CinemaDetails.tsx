@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box, VStack, HStack, Button, Text, Heading, Separator, Spinner, Center } from "@chakra-ui/react";
-import { MdArrowBack } from "react-icons/md";
+import { ArrowLeft } from "lucide-react";
 import { useCinemaStore } from "../entities/Cinema";
 
 export function CinemaDetailsPage() {
@@ -34,7 +34,7 @@ export function CinemaDetailsPage() {
           _hover={{ bg: "gray.800" }}
           onClick={() => navigate("/cinemas")}
         >
-          <MdArrowBack />
+          <ArrowLeft />
           Назад
         </Button>
         <Text color="red.400" fontSize="lg">
@@ -56,7 +56,7 @@ export function CinemaDetailsPage() {
         _hover={{ bg: "gray.800" }}
         onClick={() => navigate("/cinemas")}
       >
-        <MdArrowBack />
+        <ArrowLeft />
         Назад
       </Button>
 

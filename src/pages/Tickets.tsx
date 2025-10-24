@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, VStack, HStack, Button, Text, Spinner, Center, Separator } from "@chakra-ui/react";
-import { MdCheckCircle } from "react-icons/md";
+import { CheckCircle } from "lucide-react";
 import { useAuthStore } from "../entities/User";
 import { useTicketStore } from "../entities/Ticket/model";
 
@@ -136,7 +136,7 @@ function TicketCard({ booking, paymentTimeSeconds, onPaymentComplete, onExpired 
       <HStack gap={{ base: "2", md: "3" }} ml={{ base: "0", md: "auto" }} w={{ base: "100%", md: "auto" }}>
         {booking.isPaid ? (
           <Text fontSize={{ base: "sm", md: "md" }} color="green.400" fontWeight="600">
-            <MdCheckCircle /> Оплачено
+            <CheckCircle /> Оплачено
           </Text>
         ) : (
           <>
