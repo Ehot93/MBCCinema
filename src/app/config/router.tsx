@@ -1,14 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Layout } from "../../shared/ui";
-import { LoginPage } from "../../pages/Login";
-import { RegisterPage } from "../../pages/Register";
-import { FilmsPage } from "../../pages/Films";
-import { FilmDetailsPage } from "../../pages/FilmDetails";
-import { CinemasPage } from "../../pages/Cinemas";
-import { CinemaDetailsPage } from "../../pages/CinemaDetails";
-import { CinemaSchedulePage } from "../../pages/CinemaSchedule";
-import { SeatsPage } from "../../pages/Seats";
-import { TicketsPage } from "../../pages/Tickets";
+import { Layout } from "@/shared/ui";
+import { LoginPage } from "@/pages/Login";
+import { RegisterPage } from "@/pages/Register";
+import { FilmsPage } from "@/pages/Films";
+import { FilmDetailsPage } from "@/pages/FilmDetails";
+import { CinemasPage } from "@/pages/Cinemas";
+import { CinemaDetailsPage } from "@/pages/CinemaDetails";
+import { CinemaSchedulePage } from "@/pages/CinemaSchedule";
+import { SeatsPage } from "@/pages/Seats";
+import { TicketsPage } from "@/pages/Tickets";
 
 export function Router() {
     return (

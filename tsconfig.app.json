@@ -4,8 +4,23 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "skipLibCheck": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/pages/*": [
+        "./src/pages/*"
+      ],
+      "@/entities/*": [
+        "./src/entities/*"
+      ],
+      "@/shared/*": [
+        "./src/shared/*"
+      ],
+      "@/app/*": [
+        "./src/app/*"
+      ]
     }
   }
 }

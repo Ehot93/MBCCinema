@@ -1,6 +1,6 @@
 import { Box, SimpleGrid, VStack, Button, Text, Heading, Spinner } from "@chakra-ui/react";
-import { useMovies } from "../shared/hooks/useMovieQueries";
-import { FilmCard } from "../features/Films/components/FilmCard";
+import { useMovies } from "@/shared/hooks/useMovieQueries";
+import { FilmCard } from "@/shared/ui/FilmCard";
 
 export function FilmsPage() {
     const { data: films, isLoading, error, refetch } = useMovies();

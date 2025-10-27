@@ -24,7 +24,7 @@ export function CinemaDetailsPage() {
     data: cinemaDetails,
     isLoading,
     error,
-  } = useCinemaDetails(cinemaId || 0, {
+  } = useCinemaDetails(cinemaId ?? 0, {
     enabled: !!cinemaId && cinemaId > 0,
   });
 

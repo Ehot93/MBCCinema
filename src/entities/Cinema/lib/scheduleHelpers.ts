@@ -1,42 +1,12 @@
 // Helper functions for cinema schedule management
 
 import dayjs from "dayjs";
-
-// Кэш для мемоизации тяжелых вычислений
-const scheduleCache = new Map<string, CinemaScheduleDay[]>();
-
-export interface CinemaSession {
-    id: number;
-    filmId: number;
-    cinemaId: number;
-    startTime: string;
-    cinemaName: string;
-    filmTitle?: string;
-}
-
-export interface CinemaScheduleFilm {
-    id: number;
-    title: string;
-    sessions: CinemaSession[];
-}
-
-export interface CinemaScheduleDay {
-    date: string;
-    films: CinemaScheduleFilm[];
-}
+import type { CinemaSession, CinemaScheduleDay, CinemaScheduleFilm } from "../types";
 
 /**
- * Преобразует сеансы в расписание по дням и фильмам (с мемоизацией)
+ * Преобразует сеансы в расписание по дням и фильмам
  */
 export function transformSessionsToSchedule(sessions: CinemaSession[]): CinemaScheduleDay[] {
-    // Создаем ключ кэша на основе сеансов
-    const cacheKey = sessions.map(s => `${s.id}-${s.startTime}`).join('|');
-
-    // Проверяем кэш
-    if (scheduleCache.has(cacheKey)) {
-        return scheduleCache.get(cacheKey)!;
-    }
-
     const scheduleMap = new Map<string, Map<number, CinemaScheduleFilm>>();
 
     // Оптимизированная обработка сеансов
@@ -61,14 +31,10 @@ export function transformSessionsToSchedule(sessions: CinemaSession[]): CinemaSc
     }
 
     // Преобразуем Map в массив
-    const result = Array.from(scheduleMap.entries()).map(([date, filmsMap]) => ({
+    return Array.from(scheduleMap.entries()).map(([date, filmsMap]) => ({
         date,
         films: Array.from(filmsMap.values()),
     }));
-
-    // Кэшируем результат
-    scheduleCache.set(cacheKey, result);
-    return result;
 }
 
 /**

@@ -1,1 +1,0 @@
-export { CinemaDetailsPage } from "./CinemaDetails";

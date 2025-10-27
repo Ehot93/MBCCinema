@@ -4,6 +4,7 @@ import apiClient from "../../../shared/lib/api";
 import { Cinema } from "../../Cinema/types";
 
 interface FilmState {
+  // state
   films: Film[];
   filmDetails: FilmDetails | null;
   isLoading: boolean;
@@ -83,14 +84,6 @@ export const useFilmStore = create<FilmState>((set) => ({
   fetchFilmDetails: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      // Получаем информацию о фильме
-      const filmResponse = await apiClient.get(`/movies/${id}/sessions`);
-      const sessions = filmResponse.data;
-
-      // Получаем список кинотеатров
-      const cinemasResponse = await apiClient.get("/cinemas");
-      const cinemas = cinemasResponse.data;
-
       // Сначала проверяем, есть ли фильм уже в store
       let film: Film | undefined;
       set((state) => {
@@ -98,13 +91,29 @@ export const useFilmStore = create<FilmState>((set) => ({
         return state;
       });
 
-      // Если фильма нет в store, загружаем только этот фильм
-      if (!film) {
-        const filmResponse = await apiClient.get(`/movies/${id}`);
-        film = filmResponse.data;
+      // Подготавливаем промисы для параллельного выполнения
+      const promises: Promise<any>[] = [
+        apiClient.get(`/movies/${id}/sessions`),
+        apiClient.get("/cinemas"),
+      ];
 
+      // Если фильма нет в store, добавляем запрос информации о фильме
+      if (!film) {
+        promises.push(apiClient.get(`/movies/${id}`));
+      }
+
+      // Выполняем запросы параллельно
+      const results = await Promise.all(promises);
+      const sessions = results[0].data;
+      const cinemas = results[1].data;
+
+      // Если фильма не было в store, получаем его из результатов
+      if (!film) {
+        film = results[2]?.data;
         // Добавляем фильм в store
-        set((state) => ({ films: [...state.films, film!] }));
+        if (film) {
+          set((state) => ({ films: [...state.films, film!] }));
+        }
       }
 
       if (!film) {

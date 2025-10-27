@@ -3,12 +3,7 @@ import { Cinema, CinemaDetails } from "../types";
 import apiClient from "../../../shared/lib/api";
 import { transformSessionsToSchedule } from "../lib/scheduleHelpers";
 import { Movie, MovieSession } from "../../../shared/types/api";
-import { useCinemaDetails } from "../../../shared/hooks/useCinemaQueries";
 import dayjs from "dayjs";
-
-// Кэш для избежания повторных вычислений
-const moviesCache = new Map<number, Movie>();
-const scheduleCache = new Map<string, any>();
 
 interface CinemaState {
   cinemas: Cinema[];
@@ -44,13 +39,6 @@ export const useCinemaStore = create<CinemaState>((set) => ({
   fetchCinemaDetails: async (id: number) => {
     set({ isLoading: true, error: null });
     try {
-      // Проверяем кэш
-      const cacheKey = `cinema-${id}`;
-      if (scheduleCache.has(cacheKey)) {
-        set({ cinemaDetails: scheduleCache.get(cacheKey), isLoading: false });
-        return;
-      }
-
       // Если ID невалидный, не делаем запрос
       if (!id || id <= 0) {
         set({ error: "Неверный ID кинотеатра", isLoading: false });
@@ -74,30 +62,31 @@ export const useCinemaStore = create<CinemaState>((set) => ({
         throw new Error(`Кинотеатр с ID ${id} не найден`);
       }
 
-      // Кэшируем фильмы
-      movies.forEach((movie: Movie) => {
-        if (movie.id) moviesCache.set(movie.id, movie);
-      });
+      // Создаем Map для быстрого поиска фильмов
+      const moviesMap = new Map<number, Movie>(movies.map((movie: Movie) => [movie.id!, movie]));
 
-      // Оптимизированное преобразование сеансов
-      const transformedSessions = sessions.map((session: MovieSession) => ({
-        id: session.id,
-        filmId: session.movieId,
-        cinemaId: session.cinemaId,
-        startTime: session.startTime || "",
-        cinemaName: cinema.name,
-        filmTitle: moviesCache.get(session.movieId!)?.title,
-      }));
+      // Преобразование сеансов
+      const transformedSessions = sessions.map((session: MovieSession) => {
+        const movie = moviesMap.get(session.movieId!);
+        return {
+          id: session.id,
+          filmId: session.movieId,
+          cinemaId: session.cinemaId,
+          startTime: session.startTime || "",
+          cinemaName: cinema.name,
+          filmTitle: movie?.title,
+        };
+      });
 
       const schedule = transformSessionsToSchedule(transformedSessions);
 
-      // Оптимизированное создание CinemaDetails
+      // Создание CinemaDetails
       const cinemaDetails: CinemaDetails = {
         ...cinema,
         schedule: schedule.map((day) => ({
           date: day.date,
           films: day.films.map((film) => {
-            const movie = moviesCache.get(film.id);
+            const movie = moviesMap.get(film.id) as Movie | undefined;
             return {
               id: film.id,
               title: movie?.title || `Фильм ${film.id}`,
@@ -113,8 +102,6 @@ export const useCinemaStore = create<CinemaState>((set) => ({
         })),
       };
 
-      // Кэшируем результат
-      scheduleCache.set(cacheKey, cinemaDetails);
       set({ cinemaDetails, isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Ошибка при загрузке кинотеатра";

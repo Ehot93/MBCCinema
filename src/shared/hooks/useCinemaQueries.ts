@@ -28,9 +28,13 @@ const api = {
   },
 
   fetchCinemaSessions: async (id: number): Promise<MovieSession[]> => {
-    const response = await apiClient.get(`/cinemas/${id}/sessions`);
-    return response.data;
-  },
+    if (id) {
+      const response = await apiClient.get(`/cinemas/${id}/sessions`);
+      return response.data;
+    }
+
+    return Promise.resolve([]);
+  }
 };
 
 // React Query hooks
@@ -56,7 +60,7 @@ export function useCinemaSessions(cinemaId: number, options?: { enabled?: boolea
   return useQuery({
     queryKey: queryKeys.cinemaSessions(cinemaId),
     queryFn: () => api.fetchCinemaSessions(cinemaId),
-    enabled: !!cinemaId && options?.enabled !== false,
+    enabled: !!cinemaId && cinemaId > 0 && options?.enabled !== false,
     staleTime: 2 * 60 * 1000, // 2 минуты - сеансы могут часто меняться
     gcTime: 5 * 60 * 1000, // 5 минут
   });

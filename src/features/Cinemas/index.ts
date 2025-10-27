@@ -1,1 +1,0 @@
-export { CinemasPage } from "./Cinemas";

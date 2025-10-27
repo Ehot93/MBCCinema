@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Box, VStack, Button, Text, Heading, Image, HStack } from "@chakra-ui/react";
 import { Clock, Star } from "lucide-react";
-import { Film } from "../../../entities/Film/types";
-import { getImageUrl } from "../../../shared/lib/api";
+import { Film } from "@/entities/Film/types";
+import { getImageUrl } from "@/shared/lib/api";
 
 interface FilmCardProps {
   film: Film;
