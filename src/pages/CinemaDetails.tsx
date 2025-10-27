@@ -1,19 +1,53 @@
-import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, VStack, HStack, Button, Text, Heading, Separator, Spinner, Center } from "@chakra-ui/react";
+import {
+  Box,
+  VStack,
+  HStack,
+  Button,
+  Text,
+  Heading,
+  Separator,
+  Spinner,
+  Center,
+} from "@chakra-ui/react";
 import { ArrowLeft } from "lucide-react";
-import { useCinemaStore } from "../entities/Cinema";
+import { useCinemaDetails } from "../shared/hooks/useCinemaQueries";
 
 export function CinemaDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { cinemaDetails, isLoading, error, fetchCinemaDetails } = useCinemaStore();
+  const cinemaId = id ? parseInt(id) : null;
 
-  useEffect(() => {
-    if (id) {
-      fetchCinemaDetails(parseInt(id));
-    }
-  }, [id, fetchCinemaDetails]);
+  // Используем TanStack Query вместо Zustand store
+  // Только если cinemaId валидный (больше 0)
+  const {
+    data: cinemaDetails,
+    isLoading,
+    error,
+  } = useCinemaDetails(cinemaId || 0, {
+    enabled: !!cinemaId && cinemaId > 0,
+  });
+
+  // Если cinemaId невалидный, показываем ошибку
+  if (!cinemaId || cinemaId <= 0) {
+    return (
+      <Box flex="1" p={{ base: "4", md: "8" }} overflowY="auto">
+        <Button
+          variant="ghost"
+          color="white"
+          mb={{ base: "4", md: "6" }}
+          _hover={{ bg: "gray.800" }}
+          onClick={() => navigate("/cinemas")}
+        >
+          <ArrowLeft />
+          Назад
+        </Button>
+        <Text color="red.400" fontSize="lg">
+          Неверный ID кинотеатра
+        </Text>
+      </Box>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -38,7 +72,7 @@ export function CinemaDetailsPage() {
           Назад
         </Button>
         <Text color="red.400" fontSize="lg">
-          {error || "Кинотеатр не найден"}
+          {error instanceof Error ? error.message : "Кинотеатр не найден"}
         </Text>
       </Box>
     );
@@ -121,7 +155,9 @@ export function CinemaDetailsPage() {
                               if (sessionId) {
                                 navigate(`/seats/${sessionId}`);
                               } else {
-                                console.error(`SessionId не найден для фильма ${film.id} в ${time}`);
+                                console.error(
+                                  `SessionId не найден для фильма ${film.id} в ${time}`
+                                );
                               }
                             }}
                           >

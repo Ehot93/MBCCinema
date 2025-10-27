@@ -15,11 +15,14 @@ interface FilmState {
   setFilms: (films: Film[]) => void;
   setFilmDetails: (film: FilmDetails | null) => void;
   clearError: () => void;
+  getFilmFromCache: (id: number) => Film | null;
 }
 
 // Helper функция для группировки сеансов по датам и кинотеатрам
 function groupSessionsByDate(sessions: FilmSession[], cinemas: Cinema[]) {
-  const grouped: { [key: string]: { [cinemaId: number]: Array<{ sessionId: number; time: string }> } } = {};
+  const grouped: {
+    [key: string]: { [cinemaId: number]: Array<{ sessionId: number; time: string }> };
+  } = {};
 
   sessions.forEach((session) => {
     if (!session.startTime || !session.cinemaId || !session.id) return;
@@ -88,9 +91,21 @@ export const useFilmStore = create<FilmState>((set) => ({
       const cinemasResponse = await apiClient.get("/cinemas");
       const cinemas = cinemasResponse.data;
 
-      // Находим сам фильм в списке всех фильмов
-      const allFilmsResponse = await apiClient.get("/movies");
-      const film = allFilmsResponse.data.find((f: Film) => f.id === id);
+      // Сначала проверяем, есть ли фильм уже в store
+      let film: Film | undefined;
+      set((state) => {
+        film = state.films.find((f: Film) => f.id === id);
+        return state;
+      });
+
+      // Если фильма нет в store, загружаем только этот фильм
+      if (!film) {
+        const filmResponse = await apiClient.get(`/movies/${id}`);
+        film = filmResponse.data;
+
+        // Добавляем фильм в store
+        set((state) => ({ films: [...state.films, film!] }));
+      }
 
       if (!film) {
         throw new Error("Фильм не найден");
@@ -115,4 +130,13 @@ export const useFilmStore = create<FilmState>((set) => ({
   setFilmDetails: (film) => set({ filmDetails: film }),
 
   clearError: () => set({ error: null }),
+
+  getFilmFromCache: (id: number): Film | null => {
+    let foundFilm: Film | null = null;
+    set((state) => {
+      foundFilm = state.films.find((f: Film) => f.id === id) || null;
+      return state;
+    });
+    return foundFilm;
+  },
 }));
